@@ -1,8 +1,6 @@
-import { ref, uploadBytes } from "firebase/storage";
-import { storage } from "../lib/firebase";
-import React, { useCallback, useRef, useState } from "react";
-import Bar from "../components/Bar";
-import Webcam from "react-webcam";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc } from "firebase/firestore";
+import { storage, firestore } from "../lib/firebase";
 
 const Photo = () => {
   const webcamRef = useRef<any>(null);
