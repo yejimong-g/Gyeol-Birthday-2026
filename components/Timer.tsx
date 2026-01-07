@@ -5,9 +5,9 @@ const Timer = () => {
   const { day, hours, minutes, seconds } = useTimer();
   const onClick = () => {
     if (day === 0 && hours === 0 && minutes === 0 && seconds === 0) {
-      alert("수능 끝! 갖고 싶은걸 말해보세요😎");
+      alert("돈치치와 서프라이즈 말고 받고싶은거 있으면 말하세요 😎");
     } else {
-      alert("아직 수능 안끝났다.. 공부해라..");
+      alert("아직 생일 아니다!");
     }
   };
   return (
