@@ -1,3 +1,5 @@
+import { ref, uploadBytes } from "firebase/storage";
+import { storage } from "../lib/firebase";
 import React, { useCallback, useRef, useState } from "react";
 import Bar from "../components/Bar";
 import Webcam from "react-webcam";
