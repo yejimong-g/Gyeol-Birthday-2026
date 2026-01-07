@@ -6,21 +6,17 @@ import Webcam from "react-webcam";
 
 const Photo = () => {
   const webcamRef = useRef<any>(null);
-  const [imgSrc, setImgSrc] = useState(null);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
 
-  // <-- ADD HERE
+  // Upload function
   const uploadPhoto = async (base64: string) => {
     const blob = await (await fetch(base64)).blob();
 
-    const photoRef = ref(
-      storage,
-      `photos/${Date.now()}.jpg`
-    );
-
+    const photoRef = ref(storage, `photos/${Date.now()}.jpg`);
     await uploadBytes(photoRef, blob);
   };
-  // <-- END uploadPhoto
 
+  // Capture function
   const capture = useCallback(async () => {
     if (!webcamRef.current) return;
 
@@ -28,15 +24,11 @@ const Photo = () => {
     if (!imageSrc) return;
 
     setImgSrc(imageSrc);
-
-    await uploadPhoto(imageSrc); // <-- call it here
-  }, [webcamRef, setImgSrc]);
+    await uploadPhoto(imageSrc); // Upload to Firebase
+  }, []);
 
   return (
-    <div> ... </div>
-  );
-};
-    <div className="wrapper ">
+    <div className="wrapper">
       <span className="title py-20">📷Photo</span>
       <Bar />
       <div className="py-10 flex flex-col items-center space-y-4">
@@ -53,7 +45,7 @@ const Photo = () => {
       </div>
 
       {imgSrc && (
-        <div className="px-4 bg-white flex flex-col items-center  pt-4 pb-16">
+        <div className="px-4 bg-white flex flex-col items-center pt-4 pb-16">
           <img src={imgSrc} />
           <span className="font-kangwon-bold text-xl pt-4">
             2026. 01. 08. 결이 생일 기념🎉
