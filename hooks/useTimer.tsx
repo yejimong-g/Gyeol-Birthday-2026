@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const useTimer = () => {
-  const setDate = new Date("2022-11-17T18:00:00+0900");
+  const setDate = new Date("2026-01-08T18:00:00+0900");
 
   const now = new Date();
 
