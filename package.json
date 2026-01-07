@@ -1,5 +1,6 @@
+npm install firebase 
 {
-  "name": "soyeong-birthday",
+  "name": "gyeol-birthday",
   "version": "0.1.0",
   "private": true,
   "scripts": {
