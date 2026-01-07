@@ -8,13 +8,34 @@ const Photo = () => {
   const webcamRef = useRef<any>(null);
   const [imgSrc, setImgSrc] = useState(null);
 
-  const capture = useCallback(() => {
-    if (webcamRef) {
-      const imageSrc = webcamRef.current?.getScreenshot();
-      setImgSrc(imageSrc);
-    }
+  // <-- ADD HERE
+  const uploadPhoto = async (base64: string) => {
+    const blob = await (await fetch(base64)).blob();
+
+    const photoRef = ref(
+      storage,
+      `photos/${Date.now()}.jpg`
+    );
+
+    await uploadBytes(photoRef, blob);
+  };
+  // <-- END uploadPhoto
+
+  const capture = useCallback(async () => {
+    if (!webcamRef.current) return;
+
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (!imageSrc) return;
+
+    setImgSrc(imageSrc);
+
+    await uploadPhoto(imageSrc); // <-- call it here
   }, [webcamRef, setImgSrc]);
+
   return (
+    <div> ... </div>
+  );
+};
     <div className="wrapper ">
       <span className="title py-20">📷Photo</span>
       <Bar />
