@@ -1,20 +1,16 @@
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { collection, addDoc } from "firebase/firestore";
+import React, { useCallback, useRef, useState, useEffect } from "react";
+import Webcam from "react-webcam";
+import Bar from "../components/Bar";
 import { storage, firestore } from "../lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, query, orderBy, getDocs } from "firebase/firestore";
 
 const Photo = () => {
-  const webcamRef = useRef<any>(null);
+  const webcamRef = useRef<Webcam>(null);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
 
-  // Upload function
-  const uploadPhoto = async (base64: string) => {
-    const blob = await (await fetch(base64)).blob();
-
-    const photoRef = ref(storage, `photos/${Date.now()}.jpg`);
-    await uploadBytes(photoRef, blob);
-  };
-
-  // Capture function
+  // Capture and upload photo
   const capture = useCallback(async () => {
     if (!webcamRef.current) return;
 
@@ -22,12 +18,41 @@ const Photo = () => {
     if (!imageSrc) return;
 
     setImgSrc(imageSrc);
-    await uploadPhoto(imageSrc); // Upload to Firebase
+
+    // Convert base64 to blob
+    const blob = await (await fetch(imageSrc)).blob();
+    const photoRef = ref(storage, `photos/${Date.now()}.jpg`);
+
+    // Upload to Firebase Storage
+    await uploadBytes(photoRef, blob);
+
+    // Get download URL
+    const url = await getDownloadURL(photoRef);
+
+    // Save URL to Firestore
+    await addDoc(collection(firestore, "photos"), {
+      url,
+      createdAt: new Date(),
+    });
+
+    // Update gallery instantly
+    setPhotos(prev => [url, ...prev]);
+  }, []);
+
+  // Fetch gallery photos on load
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      const q = query(collection(firestore, "photos"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      const urls = snapshot.docs.map(doc => (doc.data() as any).url);
+      setPhotos(urls);
+    };
+    fetchPhotos();
   }, []);
 
   return (
     <div className="wrapper">
-      <span className="title py-20">📷Photo</span>
+      <span className="title py-20">📷 Photo</span>
       <Bar />
       <div className="py-10 flex flex-col items-center space-y-4">
         <span className="font-kangwon-bold text-lg">
@@ -50,6 +75,20 @@ const Photo = () => {
           </span>
         </div>
       )}
+
+      <div className="gallery px-4 py-10">
+        <h2 className="text-2xl font-bold pb-4">📸 Gallery</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {photos.map((url, i) => (
+            <img
+              key={i}
+              src={url}
+              alt={`photo-${i}`}
+              className="w-full h-auto rounded-lg"
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
