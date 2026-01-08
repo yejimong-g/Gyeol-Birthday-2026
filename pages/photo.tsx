@@ -1,7 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import Webcam from "react-webcam";
+import axios from "axios";
 import Bar from "../components/Bar";
-import { storage, ref, uploadBytes, getDownloadURL, listAll } from "../lib/firebase";
+
+// --- REPLACE THESE with your Cloudinary info ---
+const CLOUDINARY_CLOUD_NAME = "yejimong-g";
+const CLOUDINARY_UPLOAD_PRESET = "gyeol birthday gallery";
 
 const Photo = () => {
   const webcamRef = useRef<Webcam>(null);
@@ -10,18 +14,23 @@ const Photo = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Upload photo to Firebase
+  // Upload a photo to Cloudinary
   const uploadPhoto = async (base64: string) => {
     try {
       setUploading(true);
       setError(null);
 
-      const blob = await (await fetch(base64)).blob();
-      const photoRef = ref(storage, `photos/${Date.now()}.jpg`);
-      await uploadBytes(photoRef, blob);
+      const formData = new FormData();
+      formData.append("file", base64);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-      // Refresh gallery after upload
-      await loadGallery();
+      const res = await axios.post(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        formData
+      );
+
+      // Add the uploaded photo URL to the gallery
+      setGallery(prev => [res.data.secure_url, ...prev]);
     } catch (err) {
       console.error(err);
       setError("Failed to upload photo. Try again.");
@@ -30,7 +39,7 @@ const Photo = () => {
     }
   };
 
-  // Capture photo
+  // Capture photo from webcam
   const capture = useCallback(async () => {
     if (!webcamRef.current) return;
 
@@ -40,24 +49,6 @@ const Photo = () => {
     setImgSrc(imageSrc);
     await uploadPhoto(imageSrc);
   }, [webcamRef]);
-
-  // Load all photos from Firebase
-  const loadGallery = async () => {
-    try {
-      const photosRef = ref(storage, "photos/");
-      const res = await listAll(photosRef);
-      const urls = await Promise.all(res.items.map(item => getDownloadURL(item)));
-      setGallery(urls.reverse()); // newest first
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load gallery.");
-    }
-  };
-
-  // Load gallery on page load
-  useEffect(() => {
-    loadGallery();
-  }, []);
 
   return (
     <div className="wrapper">
