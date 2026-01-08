@@ -3,7 +3,6 @@ import Webcam from "react-webcam";
 import axios from "axios";
 import Bar from "../components/Bar";
 
-// --- REPLACE THESE with your Cloudinary info ---
 const CLOUDINARY_CLOUD_NAME = "yejimong-g";
 const CLOUDINARY_UPLOAD_PRESET = "gyeol birthday gallery";
 
@@ -14,7 +13,6 @@ const Photo = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Upload a photo to Cloudinary
   const uploadPhoto = async (base64: string) => {
     try {
       setUploading(true);
@@ -25,11 +23,10 @@ const Photo = () => {
       formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
       const res = await axios.post(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${yejimong-g}/image/upload`,
         formData
       );
 
-      // Add the uploaded photo URL to the gallery
       setGallery(prev => [res.data.secure_url, ...prev]);
     } catch (err) {
       console.error(err);
@@ -39,7 +36,6 @@ const Photo = () => {
     }
   };
 
-  // Capture photo from webcam
   const capture = useCallback(async () => {
     if (!webcamRef.current) return;
 
